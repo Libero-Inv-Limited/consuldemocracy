@@ -68,8 +68,22 @@ class Image < ApplicationRecord
 
         width = attachment.metadata[:width]
         height = attachment.metadata[:height]
+
+        # Check for nil dimensions
+        if width.nil? || height.nil?
+          errors.add(:attachment, "Image dimensions could not be determined.")
+          return
+        end
+
+        # Logging for debugging purposes
+        Rails.logger.debug "Width: #{width}, Height: #{height}"
+
         min_width = Setting["uploads.images.min_width"].to_i
         min_height = Setting["uploads.images.min_height"].to_i
+
+        # Logging for debugging purposes
+        Rails.logger.debug "Min Width: #{min_width}, Min Height: #{min_height}"
+
         errors.add(:attachment, :min_image_width, required_min_width: min_width) if width < min_width
         errors.add(:attachment, :min_image_height, required_min_height: min_height) if height < min_height
       end

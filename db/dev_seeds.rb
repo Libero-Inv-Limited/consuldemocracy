@@ -38,13 +38,23 @@ end
 
 def add_image_to(imageable, sample_image_files)
   # imageable should respond to #title & #author
-  imageable.image = Image.create!({
+  image = Image.new({
     imageable: imageable,
     title: imageable.title,
     attachment: Rack::Test::UploadedFile.new(sample_image_files.sample),
     user: imageable.author
   })
-  imageable.save!
+
+  if image.save
+    imageable.image = image
+    if imageable.save
+      log("Successfully saved image for #{imageable.class.name} with ID: #{imageable.id}")
+    else
+      log("Failed to associate image with #{imageable.class.name} due to errors: #{imageable.errors.full_messages.join(', ')}")
+    end
+  else
+    log("Failed to save image for #{imageable.class.name} due to errors: #{image.errors.full_messages.join(', ')}")
+  end
 end
 
 log "Creating dev seeds for tenant #{Tenant.current_schema}" unless Tenant.default?
